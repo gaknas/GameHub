@@ -5,18 +5,9 @@ class TestServer(socketserver.BaseRequestHandler):
         mode = self.request.recv(1024).decode() #получение режима
         if mode == 'join': #режим подключения
             keys = list(clients.keys()) #список клиентов
-            for i in keys: #перебор вариантов
-                info = clients[i]
-                if info == 'open': #найден челик
-                    encoded = bytes(i, encoding='utf-8')
-                    pr = i
-                    self.snd = i
-                    self.request.send(encoded) #отправляем адресс
-                    break
-            else:
-                self.request.send(b'no games')
-                self.handle_error()
-            nf = self.request.recv(1024).decode() #полученик слова
+            address = self.request.recv(1024).decode()
+            self.snd = address
+            nf = self.request.recv(1024).decode() #получение слова
             pr = nf
             clients[self.snd] = nf
             while 1:
@@ -37,6 +28,15 @@ class TestServer(socketserver.BaseRequestHandler):
                     nf = self.request.recv(1024).decode()
                     pr = nf
                     clients[unus] = nf
+        elif mode == 'load_games':
+            keys = list(clients.keys())
+            outload = []
+            for i in keys: #перебор вариантов
+                info = clients[i]
+                if info == 'open': #найден челик
+                    outload.append(i)
+            outload = '!'.join(outload)
+            self.request.send(bytes(outload, encoding='utf-8'))
                     
                     
 clients = {} #клиенты
